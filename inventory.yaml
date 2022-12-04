@@ -1,0 +1,4 @@
+all:
+  hosts:
+    angst:
+      ansible_host: angst.tomster.org
