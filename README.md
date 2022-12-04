@@ -1,6 +1,6 @@
 # setting up pleroma on FreeBSD
 
-This repository consists of an ansible playbook that basically follows along the `official FreeBSD installation guide <https://docs-develop.pleroma.social/backend/installation/freebsd_en/>`_ for `pleroma <https://pleroma.social/>`_.
+This repository consists of an ansible playbook that basically follows along the [official FreeBSD installation guide](https://docs-develop.pleroma.social/backend/installation/freebsd_en/) for [pleroma](https://pleroma.social/).
 
 To be useful you will need to adjust the variables in  `inventory.yaml` and `deployment.yaml`.
 
