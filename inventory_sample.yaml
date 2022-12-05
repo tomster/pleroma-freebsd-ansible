@@ -1,0 +1,12 @@
+all:
+  hosts:
+    pleroma:
+      ansible_host: your.fqdn.tld
+      www_server_name: social.fqdn.tld
+      # the ipv4 address of your host from which database connections are made
+      pg_ip: xxx.xxx.xxx.xxx
+      # from the first run of acme register
+      acme_thumbprint: 'xxx'
+      # values for the pleroma admin user:
+      email:
+      username: 

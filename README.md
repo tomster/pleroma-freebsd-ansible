@@ -22,6 +22,10 @@ Run `visudo` so that this line exists:
 
     %wheel  ALL=(ALL)       NOPASSWD: ALL
 
-Apply the playbook:
+Back on your local machine, prepare the inventory:
+
+    cp inventory_sample.yaml inventory.yaml
+
+Edit the variables to your needs, then apply the playbook:
 
     ansible-playbook deployment.yaml

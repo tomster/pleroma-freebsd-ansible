@@ -1,16 +1,13 @@
 ---
-- hosts: angst
+- hosts: pleroma
   become: yes
   handlers:
    - name: restart postgresql
      service: name=postgresql state=restarted
+   - name: restart nginx
+     service: name=nginx state=restarted
 
   vars:
-   - www_server_name: social.tomster.org
-   - pg_ip: 84.200.61.19
-   - acme_thumbprint: 'xxx'
-   - email: tom@tomster.org
-   - username: tomster
    - backend_user: pleroma
    - pleroma_env:
       MIX_ENV: prod
