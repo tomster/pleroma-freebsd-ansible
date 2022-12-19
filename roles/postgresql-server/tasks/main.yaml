@@ -10,11 +10,20 @@
   community.general.sysrc:
     name: postgresql_enable
     value: "YES"
+  tags: postgres_config
 
 - name: init postgresql
   ansible.builtin.command:
     cmd: "service postgresql initdb"
     creates: /var/db/postgres/data15/postgresql.conf
+
+- name: configure postgresql
+  template:
+    src: pg_hba.conf
+    dest: /var/db/postgres/data15/pg_hba.conf
+    owner: root
+    mode: 755
+  tags: postgres_config
 
 - name: Ensure postgres is started at boot time
   ansible.builtin.service:

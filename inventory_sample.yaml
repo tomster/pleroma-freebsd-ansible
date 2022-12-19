@@ -5,6 +5,3 @@ all:
       www_server_name: social.fqdn.tld
       # the ipv4 address of your host from which database connections are made
       pg_ip: xxx.xxx.xxx.xxx
-      # values for the pleroma admin user:
-      email:
-      username: 

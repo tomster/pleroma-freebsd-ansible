@@ -16,7 +16,7 @@
     create_home: true
 
 - name: Git checkout
-  become: yes
+  become: true
   become_user: pleroma
   ansible.builtin.git:
     repo: 'https://git.pleroma.social/pleroma/pleroma.git'
@@ -24,7 +24,7 @@
     version: stable
 
 - name: install hex
-  become: yes
+  become: true
   become_user: pleroma
   ansible.builtin.command:
     cmd: "mix local.hex --force"
@@ -33,27 +33,14 @@
   environment: "{{ pleroma_env }}"
 
 - name: install mix deps
-  become: yes
+  become: true
   become_user: pleroma
   ansible.builtin.command:
     cmd: "mix deps.get --force"
     chdir: /usr/home/pleroma/pleroma
-    creates: /home/pleroma/pleroma/config/generated_config.exs
+    # creates: /home/pleroma/pleroma/config/generated_config.exs
   environment: "{{ pleroma_env }}"
 
-- name: copy generated configuration
-  ansible.builtin.copy:
-    src: /home/pleroma/pleroma/config/generated_config.exs
-    dest: /home/pleroma/pleroma/config/prod.secret.exs
-    remote_src: yes
-  
-- name: initialize database
-  become: yes
-  become_user: postgres
-  ansible.builtin.command:
-    cmd: "psql -f config/setup_db.psql"
-    chdir: /usr/home/pleroma/pleroma
-  
 - name: copy startup script
   ansible.builtin.copy:
     src: pleroma.service
@@ -70,10 +57,8 @@
     name: pleroma
     state: started
 
-- name: create admin user
-  become: yes
-  become_user: "{{ backend_user }}"
-  ansible.builtin.command:
-    cmd: "mix pleroma.user new {{ username }} {{ email }} --admin -y"
-    chdir: /usr/home/pleroma/pleroma
-  environment: "{{ pleroma_env }}"
+- name: Print info
+  ansible.builtin.debug:
+    msg: |
+      
+      Almost done! now ssh into {{ ansible_ssh_host }} and follow the instructions in the README
