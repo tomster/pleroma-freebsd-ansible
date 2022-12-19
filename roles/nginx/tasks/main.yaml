@@ -1,0 +1,52 @@
+---
+- name: Install packages
+  community.general.pkgng:
+    name:
+      - nginx
+      - acme.sh
+
+- name: enable nginx
+  community.general.sysrc:
+    name: nginx_enable
+    value: "YES"
+
+- name: configure nginx
+  template:
+    src: nginx.conf
+    dest: /usr/local/etc/nginx/nginx.conf
+    owner: root
+    mode: 755
+  tags: nginx_config
+
+- name: ensure nginx conf.d directory exists
+  file:
+    path: /usr/local/etc/nginx/conf.d
+    state: directory
+    owner: root
+    mode: 755
+  tags: nginx_config
+
+- name: Ensure nginx is started at boot time
+  ansible.builtin.service:
+    name: nginx
+    state: started
+  tags: nginx_config
+
+- name: Check for SSL Certs
+  ansible.builtin.stat:
+    path: /var/db/acme/certs/{{ www_server_name }}/fullchain.cer
+  register: cert_stat
+
+- name: Handle Letsencrypt
+  ansible.builtin.import_tasks: acme.yaml
+  tags: acme
+  when: not cert_stat.stat.exists
+
+- name: configure pleroma application for nginx
+  template:
+    src: pleroma.conf
+    dest: /usr/local/etc/nginx/conf.d/pleroma.conf
+    owner: root
+    mode: 755
+  tags: nginx_config
+  notify: restart nginx

@@ -1,0 +1,45 @@
+---
+# - name: Install packages
+#   community.general.pkgng:
+#     name:
+#       - acme.sh
+
+- name: let www access acme certs
+  ansible.builtin.user:
+    name: www
+    append: true
+    groups: acme
+
+- name: touch acme logs
+  ansible.builtin.file:
+    path: /var/log/acme.sh.log
+    state: touch
+    owner: acme
+    group: acme
+    mode: '0600'
+
+- name: register with acme
+  become: true
+  become_user: acme
+  ansible.builtin.shell: acme.sh --register-account -m {{ email }} | grep ACCOUNT_THUMBPRINT | awk -F= '{gsub("'\''", ""); print $2}'
+  register: acme_thumbprint
+
+- name: configure nginx for acme challenge
+  template:
+    src: pleroma_wkac.conf
+    dest: /usr/local/etc/nginx/conf.d/pleroma_wkac.conf
+    owner: root
+    mode: 755
+
+- name: reload nginx
+  ansible.builtin.shell: service nginx reload
+
+- name: issue cert with acme
+  become: true
+  become_user: acme
+  ansible.builtin.command:
+    cmd: "acme.sh --issue -d {{ www_server_name }} --stateless"
+    creates: "/var/db/acme/certs/{{ www_server_name }}/fullchain.cer"
+
+
+

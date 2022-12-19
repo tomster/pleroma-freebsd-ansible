@@ -1,0 +1,23 @@
+---
+- name: Install packages
+  community.general.pkgng:
+    name:
+      - postgresql15-server
+      - postgresql15-client
+      - postgresql15-contrib
+
+- name: enable postgresql
+  community.general.sysrc:
+    name: postgresql_enable
+    value: "YES"
+
+- name: init postgresql
+  ansible.builtin.command:
+    cmd: "service postgresql initdb"
+    creates: /var/db/postgres/data15/postgresql.conf
+
+- name: Ensure postgres is started at boot time
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+  

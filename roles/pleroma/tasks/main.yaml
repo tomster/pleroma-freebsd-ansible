@@ -1,0 +1,79 @@
+---
+- name: Install packages
+  community.general.pkgng:
+    name:
+      - git-lite
+      - elixir
+      - gmake
+      - cmake
+      - ImageMagick7
+      - ffmpeg
+      - p5-Image-ExifTool
+
+- name: setup pleroma service user
+  ansible.builtin.user:
+    name: pleroma
+    create_home: true
+
+- name: Git checkout
+  become: yes
+  become_user: pleroma
+  ansible.builtin.git:
+    repo: 'https://git.pleroma.social/pleroma/pleroma.git'
+    dest: /usr/home/pleroma/pleroma
+    version: stable
+
+- name: install hex
+  become: yes
+  become_user: pleroma
+  ansible.builtin.command:
+    cmd: "mix local.hex --force"
+    chdir: /usr/home/pleroma/pleroma
+    creates: /home/pleroma/.mix/archives/hex-2.0.0
+  environment: "{{ pleroma_env }}"
+
+- name: install mix deps
+  become: yes
+  become_user: pleroma
+  ansible.builtin.command:
+    cmd: "mix deps.get --force"
+    chdir: /usr/home/pleroma/pleroma
+    creates: /home/pleroma/pleroma/config/generated_config.exs
+  environment: "{{ pleroma_env }}"
+
+- name: copy generated configuration
+  ansible.builtin.copy:
+    src: /home/pleroma/pleroma/config/generated_config.exs
+    dest: /home/pleroma/pleroma/config/prod.secret.exs
+    remote_src: yes
+  
+- name: initialize database
+  become: yes
+  become_user: postgres
+  ansible.builtin.command:
+    cmd: "psql -f config/setup_db.psql"
+    chdir: /usr/home/pleroma/pleroma
+  
+- name: copy startup script
+  ansible.builtin.copy:
+    src: pleroma.service
+    dest: /usr/local/etc/rc.d/pleroma
+    mode: '0755'
+    
+- name: enable pleroma
+  community.general.sysrc:
+    name: pleroma_enable
+    value: "YES"
+
+- name: Ensure pleroma is started at boot time
+  ansible.builtin.service:
+    name: pleroma
+    state: started
+
+- name: create admin user
+  become: yes
+  become_user: "{{ backend_user }}"
+  ansible.builtin.command:
+    cmd: "mix pleroma.user new {{ username }} {{ email }} --admin -y"
+    chdir: /usr/home/pleroma/pleroma
+  environment: "{{ pleroma_env }}"
