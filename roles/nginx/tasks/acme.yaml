@@ -1,8 +1,8 @@
 ---
-# - name: Install packages
-#   community.general.pkgng:
-#     name:
-#       - acme.sh
+- name: Install packages
+  community.general.pkgng:
+    name:
+      - acme.sh
 
 - name: let www access acme certs
   ansible.builtin.user:
@@ -31,7 +31,7 @@
     owner: root
     mode: 755
 
-- name: reload nginx
+- name: reload nginx to activate challenge response
   ansible.builtin.shell: service nginx reload
 
 - name: issue cert with acme
