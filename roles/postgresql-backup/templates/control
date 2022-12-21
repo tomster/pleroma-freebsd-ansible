@@ -1,0 +1,19 @@
+#!/bin/sh
+
+COMMAND=$1
+
+export PGDATA={{ target_dir}}/instance
+export PGPORT={{ pg_port}}
+
+case $COMMAND in
+    start)
+        pg_ctl -l {{ target_dir }}/instance/logfile start
+    ;;
+    stop)
+        pg_ctl stop
+    ;;
+    *)
+        echo "Unrecognized command: $COMMAND"
+        exit 1
+    ;;
+esac

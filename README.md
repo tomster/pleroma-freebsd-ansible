@@ -68,3 +68,12 @@ Finally, create an admin user:
     $ MIX_ENV=prod mix pleroma.user new <username> <your@emailaddress> --admin
 
 You now should be able to visit the URL printed and start using the instance.
+
+
+## Database backup
+
+Uses Postgresql's WAL to maintain an incremental, always-up-to-date copy of the servers data on an backup system.
+
+From that backup, you can easily fire up a local copy of any given state of the server (i.e. for debugging or testing) but also (of course) re-install any given state on a new server in case something bad[tm] having happened.
+
+The backup host can be any system that supports Postgresql. The role installs a custom instance running on the non-default port with relaxed access rules (since it is considered to run locally and/or just temporarily)

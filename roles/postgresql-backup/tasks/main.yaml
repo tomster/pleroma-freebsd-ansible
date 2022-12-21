@@ -1,0 +1,32 @@
+- name: Print info
+  ansible.builtin.debug:
+    msg: |
+      Running on {{ ansible_facts['distribution'] }}
+
+- name: Create backup directory
+  ansible.builtin.file:
+    path: "{{ target_dir }}/{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - backup
+    - bin
+
+- name: Create instance directory
+  ansible.builtin.file:
+    path: "{{ target_dir }}/{{ item }}"
+    state: directory
+    mode: '0700'
+  with_items:
+    - instance
+
+- name: Init database files
+  ansible.builtin.command:
+    cmd: "initdb --encoding=utf8 --pgdata={{ target_dir }}/instance"
+    creates: "{{ target_dir }}/instance/PG_VERSION"
+
+- name: create startup script
+  template:
+    src: control
+    dest: "{{ target_dir }}/bin/control"
+    mode: '0755'
