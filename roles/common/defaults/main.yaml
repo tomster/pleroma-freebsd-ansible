@@ -1,0 +1,4 @@
+---
+data_dir: /var/db/postgres/data15
+archive_dir: /var/db/postgres/archive15
+postgres_user: postgres
