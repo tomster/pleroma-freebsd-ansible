@@ -5,6 +5,7 @@
       - postgresql15-server
       - postgresql15-client
       - postgresql15-contrib
+      - py39-cryptography
 
 - name: enable postgresql
   community.general.sysrc:
@@ -15,18 +16,60 @@
 - name: init postgresql
   ansible.builtin.command:
     cmd: "service postgresql initdb"
-    creates: /var/db/postgres/data15/postgresql.conf
+    creates: "{{ data_dir }}/postgresql.conf"
 
 - name: configure postgresql
   template:
     src: pg_hba.conf
-    dest: /var/db/postgres/data15/pg_hba.conf
+    dest: "{{ data_dir }}/pg_hba.conf"
     owner: root
-    mode: 755
+    mode: '0755'
+  notify: restart postgresql
   tags: postgres_config
+
+- name: configure postgresql
+  template:
+    src: postgresql.conf
+    dest: "{{ data_dir }}/postgresql.conf"
+    owner: "{{ postgres_user }}"
+    mode: '0755'
+  notify: restart postgresql
+  tags: postgres_config
+
+- name: Create private key (RSA, 4096 bits)
+  community.crypto.openssl_privatekey:
+    path: "{{ data_dir }}/server.key"
+    owner: "{{ postgres_user }}"
+    mode: '0600'
+  tags: postgres_config
+
+- name: Create certificate signing request (CSR) for self-signed certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path:  "{{ data_dir }}/server.key"
+    common_name: "{{ www_server_name }}"
+    organization_name: "{{ www_org_name }}"
+    subject_alt_name:
+      - "DNS:{{ www_server_name }}"
+  register: csr
+
+- name: Create self-signed certificate from CSR
+  community.crypto.x509_certificate:
+    path: "{{ data_dir }}/server.crt"
+    csr_content: "{{ csr.csr }}"
+    privatekey_path:  "{{ data_dir }}/server.key"
+    provider: selfsigned
+    owner: "{{ postgres_user }}"
+    mode: '0600'
+
+- name: create archive directory 
+  ansible.builtin.file:
+    path: "{{ archive_dir }}"
+    state: directory
+    owner: "{{ postgres_user }}"
+    mode: '0700'
 
 - name: Ensure postgres is started at boot time
   ansible.builtin.service:
     name: postgresql
     state: started
-  
+

@@ -3,6 +3,7 @@ all:
     pleroma:
       ansible_host: your.fqdn.tld
       www_server_name: social.fqdn.tld
+      www_org_name: ACME Inc.
       # the ipv4 address of your host from which database connections are made
       pg_ip: xxx.xxx.xxx.xxx
       # the email used to register with letsencrypt
