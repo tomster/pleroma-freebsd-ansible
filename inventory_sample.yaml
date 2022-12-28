@@ -2,9 +2,17 @@ all:
   hosts:
     pleroma:
       ansible_host: your.fqdn.tld
-      www_server_name: social.fqdn.tld
-      www_org_name: ACME Inc.
-      # the ipv4 address of your host from which database connections are made
-      pg_ip: xxx.xxx.xxx.xxx
-      # the email used to register with letsencrypt
-      email: xxx
+    pgbackup:
+  vars:
+    www_server_name: social.fqdn.tld
+    www_org_name: ACME Inc.
+    # the ipv4 address of your host from which database connections are made
+    pg_ip: xxx.xxx.xxx.xxx
+    # the email used to register with letsencrypt
+    email: xxx
+    # the password for the postgres backup user
+    postgres_admin_user: xxxx
+    postgres_backup_user: xxxx
+    pg_host: db.fqdn.tld
+    pg_service: db
+    pg_backup_target_dir: /some/where/local

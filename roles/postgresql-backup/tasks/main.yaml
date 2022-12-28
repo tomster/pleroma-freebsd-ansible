@@ -1,20 +1,16 @@
-- name: Print info
-  ansible.builtin.debug:
-    msg: |
-      Running on {{ ansible_facts['distribution'] }}
-
 - name: Create backup directory
   ansible.builtin.file:
-    path: "{{ target_dir }}/{{ item }}"
+    path: "{{ pg_backup_target_dir }}/{{ item }}"
     state: directory
     mode: '0755'
   with_items:
     - backup
     - bin
+    - certs
 
 - name: Create instance directory
   ansible.builtin.file:
-    path: "{{ target_dir }}/{{ item }}"
+    path: "{{ pg_backup_target_dir }}/{{ item }}"
     state: directory
     mode: '0700'
   with_items:
@@ -22,11 +18,30 @@
 
 - name: Init database files
   ansible.builtin.command:
-    cmd: "initdb --encoding=utf8 --pgdata={{ target_dir }}/instance"
-    creates: "{{ target_dir }}/instance/PG_VERSION"
+    cmd: "initdb --encoding=utf8 --pgdata={{ pg_backup_target_dir }}/instance"
+    creates: "{{ pg_backup_target_dir }}/instance/PG_VERSION"
 
 - name: create startup script
   template:
     src: control
-    dest: "{{ target_dir }}/bin/control"
+    dest: "{{ pg_backup_target_dir }}/bin/control"
     mode: '0755'
+
+- name: Upload server key
+  ansible.builtin.copy:
+    src: "{{ local_temp_dir }}/server.key"
+    dest:  "{{ pg_backup_target_dir }}/certs/server.key"
+    mode: '0600'
+
+- name: Upload server cert
+  ansible.builtin.copy:
+    src: "{{ local_temp_dir }}/server.crt"
+    dest:  "{{ pg_backup_target_dir }}/certs/server.crt"
+    mode: '0600'
+
+- name: create service config
+  template:
+    src: pg_service.conf
+    dest: "{{ pg_backup_target_dir }}/pg_service.conf"
+    mode: '0600'
+

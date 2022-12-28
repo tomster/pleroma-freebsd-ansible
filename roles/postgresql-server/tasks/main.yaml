@@ -6,6 +6,11 @@
       - postgresql15-client
       - postgresql15-contrib
       - py39-cryptography
+      - py39-pip
+
+- name: Install python packages
+  ansible.builtin.pip:
+    name: psycopg2==2.9.5
 
 - name: enable postgresql
   community.general.sysrc:
@@ -17,6 +22,18 @@
   ansible.builtin.command:
     cmd: "service postgresql initdb"
     creates: "{{ data_dir }}/postgresql.conf"
+
+- name: Create admin user
+  community.postgresql.postgresql_user:
+    name: "{{ postgres_admin_user }}"
+    password: "{{ postgres_admin_password }}"
+    role_attr_flags: SUPERUSER,LOGIN
+
+- name: Create backupuser
+  community.postgresql.postgresql_user:
+    name: "{{ postgres_backup_user }}"
+    password: "{{ postgres_backup_password }}"
+    role_attr_flags: REPLICATION,LOGIN
 
 - name: configure postgresql
   template:
@@ -60,6 +77,18 @@
     provider: selfsigned
     owner: "{{ postgres_user }}"
     mode: '0600'
+
+- name: Download generated cert
+  ansible.builtin.fetch:
+    src:  "{{ data_dir }}/server.crt"
+    dest: "{{ local_temp_dir }}/server.crt"
+    flat: true
+
+- name: Download generated key
+  ansible.builtin.fetch:
+    src:  "{{ data_dir }}/server.key"
+    dest: "{{ local_temp_dir }}/server.key"
+    flat: true
 
 - name: create archive directory 
   ansible.builtin.file:

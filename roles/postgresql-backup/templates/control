@@ -2,15 +2,39 @@
 
 COMMAND=$1
 
-export PGDATA={{ target_dir}}/instance
+export PGDATA={{ pg_backup_target_dir}}/instance
 export PGPORT={{ pg_port}}
+
+function pg_start () {
+    pg_ctl -l {{ pg_backup_target_dir }}/instance/logfile start
+}
+
+function pg_stop () {
+    pg_ctl stop
+}
+
 
 case $COMMAND in
     start)
-        pg_ctl -l {{ target_dir }}/instance/logfile start
+        pg_start
     ;;
     stop)
-        pg_ctl stop
+        pg_stop
+    ;;
+    init)
+        # stop the local instance
+        pg_stop
+        # sync the data dir
+        # sync the WAL files
+        # start the local instance
+        pg_start
+    ;;
+    sync)
+        # stop the local instance
+        pg_stop
+        # sync the WAL files
+        # start the local instance
+        pg_start
     ;;
     *)
         echo "Unrecognized command: $COMMAND"

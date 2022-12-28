@@ -2,3 +2,5 @@
 data_dir: /var/db/postgres/data15
 archive_dir: /var/db/postgres/archive15
 postgres_user: postgres
+postgres_backup_user: pgbackup
+local_temp_dir: /tmp/pleroma-freebsd-ansible/
